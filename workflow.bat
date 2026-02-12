@@ -1,13 +1,12 @@
 @echo off
-:: Use PowerShell to get a clean start timestamp
-for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set STARTTIME=%%a
-set "TSTART=%time%"
-
 SETLOCAL EnableDelayedExpansion
+
+:: Capture Start Time in total seconds (Unix-like timestamp)
+for /f "tokens=*" %%a in ('powershell -command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set START_UNIX=%%a
+for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set START_HUMAN=%%a
 
 :: --- YOUR CODE STARTS HERE ---
 echo [1/7] Activating Environment...
-:: Note: 'call conda' is correct for batch
 call conda activate mlp || (echo Failed to activate conda & exit /b 1)
 
 echo [2/7] Generating Dataset...
@@ -37,11 +36,18 @@ echo ======================================================
 call conda deactivate
 :: --- YOUR CODE ENDS HERE ---
 
-:: Calculate Duration using PowerShell so we don't have to deal with Batch math
-for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set ENDTIME=%%a
-for /f "tokens=*" %%a in ('powershell -command "$s=Get-Date '%STARTTIME%'; $e=Get-Date '%ENDTIME%'; $d=$e-$s; \"$($d.Minutes)m $($d.Seconds)s\""') do set DURATION=%%a
+:: Capture End Time
+for /f "tokens=*" %%a in ('powershell -command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set END_UNIX=%%a
+for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set END_HUMAN=%%a
+
+:: Calculate Duration (Seconds to Mins/Secs)
+for /f "tokens=*" %%a in ('powershell -command "$diff = %END_UNIX% - %START_UNIX%; $m = [Math]::Floor($diff/60); $s = $diff %% 60; \"$m m $s s\""') do set DURATION=%%a
 
 echo.
-echo Started:  %STARTTIME%
-echo Finished: %ENDTIME%
+echo ------------------------------------------------------
+echo Execution Summary:
+echo Started:  %START_HUMAN%
+echo Finished: %END_HUMAN%
 echo Duration: %DURATION%
+echo ------------------------------------------------------
+pause
