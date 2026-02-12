@@ -288,57 +288,158 @@ def generate_logic_heatmap_html(matrix_df, metadata, filename="logic_circuit_map
         f.write(html_content)
     return os.path.abspath(filename)
 
-def generate_sankey_diagram(df, top_k=150):
-    """
-    Generates a Google Charts Sankey Diagram.
-    Levels: Index -> Input Value -> Neuron -> Feature -> Output Value
-    """
-    # 1. Data Processing
+# def generate_sankey_diagram(df, top_k=500):
+#     """
+#     Generates a Google Charts Sankey Diagram.
+#     Levels: Index -> Input Value -> Neuron -> Feature -> Output Value
+#     """
+#     # 1. Data Processing
+#     df = df.copy()
+#     df['energy'] = pd.to_numeric(df['neuron_act']) * pd.to_numeric(df['feature_act'])
+    
+#     # Prefixing to avoid circularity (required for Google Charts as well)
+#     df['L1'] = "Idx: " + df['idx_combination'].astype(str)
+#     df['L2'] = "Val: " + df['val_combination'].astype(str)
+#     df['L3'] = "Neu: " + df['neuron_id'].astype(str)
+#     df['L4'] = "Feat: " + df['feature_id'].astype(str)
+#     df['L5'] = "Out: " + df['expected'].astype(str)
+    
+#     flow_definitions = [
+#         ('L1', 'L2'),
+#         ('L2', 'L3'),
+#         ('L3', 'L4'),
+#         ('L4', 'L5')
+#     ]
+    
+#     # Build the Row Array for Google Charts: [['From', 'To', 'Weight'], ...]
+#     rows = []
+#     for src_col, tgt_col in flow_definitions:
+#         temp_flow = df.groupby([src_col, tgt_col])['energy'].sum().reset_index()
+#         temp_flow.columns = ['source', 'target', 'value']
+        
+#         # Take the top connections per level to keep it clean
+#         top_temp = temp_flow.nlargest(top_k // 4, 'value')
+        
+#         for _, row in top_temp.iterrows():
+#             rows.append([row['source'], row['target'], round(float(row['value']), 4)])
+
+#     # 2. HTML Template with Google Charts JS
+#     html_content = f"""
+#     <!DOCTYPE html>
+#     <html>
+#     <head>
+#         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+#         <style>
+#             body {{ font-family: 'Inter', -apple-system, sans-serif; background: #ffffff; margin: 0; padding: 20px; }}
+#             #sankey_main {{ width: 100%; height: 850px; min-width: 1200px; }}
+#             .header {{ text-align: center; margin-bottom: 20px; }}
+#         </style>
+#     </head>
+#     <body>
+#         <div class="header">
+#             <h2>Mechanistic Interpretability: End-to-End Circuit Flow</h2>
+#             <p>Hover over nodes to see causal trace intensity</p>
+#         </div>
+#         <div id="sankey_main"></div>
+
+#         <script type="text/javascript">
+#           google.charts.load('current', {{'packages':['sankey']}});
+#           google.charts.setOnLoadCallback(drawChart);
+
+#           function drawChart() {{
+#             var data = new google.visualization.DataTable();
+#             data.addColumn('string', 'From');
+#             data.addColumn('string', 'To');
+#             data.addColumn('number', 'Weight');
+#             data.addRows({json.dumps(rows)});
+
+#             // Styling based on your reference image
+#             var colors = ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
+#                           '#cab2d6', '#ffff99', '#1f78b4', '#33a02c'];
+
+#             var options = {{
+#               height: 800,
+#               sankey: {{
+#                 node: {{
+#                   colors: colors,
+#                   label: {{ fontSize: 12, color: '#444', fontWeight: 'bold' }},
+#                   interactivity: true,
+#                   width: 15,
+#                   labelPadding: 15
+#                 }},
+#                 link: {{
+#                   colorMode: 'gradient', // Creates that beautiful soft flow
+#                   colors: colors,
+#                   fillOpacity: 0.2 // Soft pastel look
+#                 }}
+#               }}
+#             }};
+
+#             var chart = new google.visualization.Sankey(document.getElementById('sankey_main'));
+#             chart.draw(data, options);
+#           }}
+#         </script>
+#     </body>
+#     </html>
+#     """
+
+#     path = "google_circuit_sankey.html"
+#     with open(path, "w", encoding="utf-8") as f:
+#         f.write(html_content)
+#     return os.path.abspath(path)
+
+def generate_sankey_diagram(df, top_k=500):
     df = df.copy()
+    # 1. Calculate Energy
     df['energy'] = pd.to_numeric(df['neuron_act']) * pd.to_numeric(df['feature_act'])
     
-    # Prefixing to avoid circularity (required for Google Charts as well)
-    df['L1'] = "Idx: " + df['idx_combination'].astype(str)
-    df['L2'] = "Val: " + df['val_combination'].astype(str)
-    df['L3'] = "Neu: " + df['neuron_id'].astype(str)
-    df['L4'] = "Feat: " + df['feature_id'].astype(str)
-    df['L5'] = "Out: " + df['expected'].astype(str)
+    # 2. Strict Level Prefixing (To keep 5 columns)
+    df['L1'] = "(Idx) " + df['idx_combination'].astype(str)
+    df['L2'] = "(Val) " + df['val_combination'].astype(str)
+    df['L3'] = "(Neu) " + df['neuron_id'].astype(str)
+    df['L4'] = "(Feat) " + df['feature_id'].astype(str)
+    df['L5'] = "(Out) " + df['expected'].astype(str)
     
-    flow_definitions = [
-        ('L1', 'L2'),
-        ('L2', 'L3'),
-        ('L3', 'L4'),
-        ('L4', 'L5')
-    ]
-    
-    # Build the Row Array for Google Charts: [['From', 'To', 'Weight'], ...]
+    flow_steps = [('L1', 'L2'), ('L2', 'L3'), ('L3', 'L4'), ('L4', 'L5')]
     rows = []
-    for src_col, tgt_col in flow_definitions:
-        temp_flow = df.groupby([src_col, tgt_col])['energy'].sum().reset_index()
-        temp_flow.columns = ['source', 'target', 'value']
-        
-        # Take the top connections per level to keep it clean
-        top_temp = temp_flow.nlargest(top_k // 4, 'value')
-        
-        for _, row in top_temp.iterrows():
-            rows.append([row['source'], row['target'], round(float(row['value']), 4)])
+    
+    # SCALING FACTOR: Boost small energy values so lines appear thick
+    # Adjust this multiplier (e.g., 100 or 1000) based on your data range
+    scale_factor = 100 
 
-    # 2. HTML Template with Google Charts JS
+    # Increase the height dynamically based on the number of unique nodes
+    # If top_k is large, we want a taller canvas.
+    canvas_height = 1500  # Increased from 850 for a "Deep-Dive" view
+
+    for src_col, tgt_col in flow_steps:
+        step_data = df.groupby([src_col, tgt_col])['energy'].sum().reset_index()
+        step_data.columns = ['source', 'target', 'value']
+        
+        # Take the most important signals
+        top_step = step_data.nlargest(top_k // 4, 'value')
+        
+        for _, row in top_step.iterrows():
+            if row['value'] > 0:
+                # Multiply by scale_factor to ensure visual thickness
+                weighted_val = float(row['value']) * scale_factor
+                rows.append([row['source'], row['target'], round(weighted_val, 4)])
+
+    # 3. HTML with Enhanced Sharpness
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <style>
-            body {{ font-family: 'Inter', -apple-system, sans-serif; background: #ffffff; margin: 0; padding: 20px; }}
-            #sankey_main {{ width: 100%; height: 850px; min-width: 1200px; }}
+            body {{ font-family: 'Inter', sans-serif; background: #ffffff; padding: 30px; }}
+            #sankey_main {{ width: 100%; height: {canvas_height}px; min-width: 1400px; }}
             .header {{ text-align: center; margin-bottom: 20px; }}
         </style>
     </head>
     <body>
         <div class="header">
-            <h2>Mechanistic Interpretability: End-to-End Circuit Flow</h2>
-            <p>Hover over nodes to see causal trace intensity</p>
+            <h2 style="color: #2c3e50;">Structural Interpretability: High-Fidelity Flow</h2>
+            <p style="color: #7f8c8d;">Energy values scaled x{scale_factor} for visual clarity</p>
         </div>
         <div id="sankey_main"></div>
 
@@ -353,24 +454,25 @@ def generate_sankey_diagram(df, top_k=150):
             data.addColumn('number', 'Weight');
             data.addRows({json.dumps(rows)});
 
-            // Styling based on your reference image
-            var colors = ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
-                          '#cab2d6', '#ffff99', '#1f78b4', '#33a02c'];
+            // Using a Sharper, Vibrant Palette
+            var colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
+                          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
 
             var options = {{
-              height: 800,
+              height: {canvas_height},
               sankey: {{
+                iterations: 0, // Forces strict column segregation
                 node: {{
                   colors: colors,
-                  label: {{ fontSize: 12, color: '#444', fontWeight: 'bold' }},
-                  interactivity: true,
-                  width: 15,
-                  labelPadding: 15
+                  label: {{ fontSize: 10, color: '#1a1a1a', bold: true }},
+                  width: 30,           // Thicker nodes
+                  labelPadding: 25,    // More space for labels
+                  interactivity: true
                 }},
                 link: {{
-                  colorMode: 'gradient', // Creates that beautiful soft flow
-                  colors: colors,
-                  fillOpacity: 0.2 // Soft pastel look
+                  colorMode: 'gradient',
+                  fillOpacity: 0.5,     // BOOSTED OPACITY for "Sharp" look
+                  colors: colors
                 }}
               }}
             }};
@@ -383,10 +485,10 @@ def generate_sankey_diagram(df, top_k=150):
     </html>
     """
 
-    path = "google_circuit_sankey.html"
-    with open(path, "w", encoding="utf-8") as f:
+    filename = "uhd_bold_sankey.html"
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(html_content)
-    return os.path.abspath(path)
+    return os.path.abspath(filename)
 
 def generate_stacked_norm_dist(df, top_k=20):
     """
