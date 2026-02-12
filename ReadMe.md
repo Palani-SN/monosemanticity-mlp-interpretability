@@ -204,15 +204,15 @@ Duration: 21 m 9 s
 
 - The pipeline successfully synthesized three distinct perspectives of the model's "brain":
 
-- **The Logic Heatmap** : Maps the raw input triggers to internal activation.
+- **The Logic Heatmap** : Maps the raw input triggers to internal activation. (refer **logic_circuit_map.html**)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/heatmap.png?raw=true)
 
-- **The Stacked Norm Dist** : Confirms the statistical reliability and "stability" of the identified features.
+- **The Stacked Norm Dist** : Confirms the statistical reliability and "stability" of the identified features. (refer **circuit_bell_curves.html**)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/bellcurve.png?raw=true)
 
-- **The UHD Sankey Diagram** : Provides the definitive "Causal Map," showing exactly how an input index flows through a specific Neuron, triggers a specific SAE Feature, and results in the final MLP prediction.
+- **The UHD Sankey Diagram** : Provides the definitive "Causal Map," showing exactly how an input index flows through a specific Neuron, triggers a specific SAE Feature, and results in the final MLP prediction. (refer **uhd_bold_sankey.html**)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/sankey_diagram.png?raw=true)
 
