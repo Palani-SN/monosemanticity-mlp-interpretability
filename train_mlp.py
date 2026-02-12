@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from data_loader import load_excel_to_dataloader
-from mlp_definition import InterpretabilityMLP
+from dataset.data_loader import load_excel_to_dataloader
+from mlp.mlp_definition import InterpretabilityMLP
 
 # --- 3. Training Script ---
 def train_model():
@@ -10,8 +10,8 @@ def train_model():
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
 
-    train_loader = load_excel_to_dataloader("mlp_train.xlsx")
-    val_loader = load_excel_to_dataloader("mlp_val.xlsx")
+    train_loader = load_excel_to_dataloader("dataset/mlp_train.xlsx")
+    val_loader = load_excel_to_dataloader("dataset/mlp_val.xlsx")
 
     for epoch in range(250):
         model.train()
@@ -28,7 +28,7 @@ def train_model():
             val_loss = sum(criterion(model(bx), by) for bx, by in val_loader) / len(val_loader)
             print(f"Epoch {epoch+1} | Val Loss: {val_loss:.4f}")
 
-    torch.save(model.state_dict(), "trained_mlp.pth")
+    torch.save(model.state_dict(), "mlp/trained_mlp.pth")
     return model
 
 # --- 3. Training & Testing Script ---
@@ -38,9 +38,9 @@ def train_and_test_model():
     criterion = nn.MSELoss()
 
     # Load all three sets
-    train_loader = load_excel_to_dataloader("mlp_train.xlsx")
-    val_loader   = load_excel_to_dataloader("mlp_val.xlsx")
-    test_loader  = load_excel_to_dataloader("mlp_test.xlsx")
+    train_loader = load_excel_to_dataloader("dataset/mlp_train.xlsx")
+    val_loader   = load_excel_to_dataloader("dataset/mlp_val.xlsx")
+    test_loader  = load_excel_to_dataloader("dataset/mlp_test.xlsx")
 
     # --- Training Loop ---
     for epoch in range(250):
@@ -70,14 +70,14 @@ def train_and_test_model():
     print(f"Final Test MSE: {avg_test_loss:.4f}")
     
     # Save the model
-    torch.save(model.state_dict(), "trained_mlp.pth")
+    torch.save(model.state_dict(), "mlp/trained_mlp.pth")
     return model
 
 def train_to_perfection():
     model = InterpretabilityMLP()
-    train_loader = load_excel_to_dataloader("mlp_train.xlsx", batch_size=64)
-    val_loader = load_excel_to_dataloader("mlp_val.xlsx", batch_size=64)
-    
+    train_loader = load_excel_to_dataloader("dataset/mlp_train.xlsx", batch_size=64)
+    val_loader = load_excel_to_dataloader("dataset/mlp_val.xlsx", batch_size=64)
+
     epochs = 500 # Pushing further for total convergence
     optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-5)
     
@@ -105,7 +105,7 @@ def train_to_perfection():
                 v_loss = sum(criterion(model(bx), by) for bx, by in val_loader) / len(val_loader)
                 print(f"Epoch {epoch+1} | Val MSE: {v_loss:.6f}")
 
-    torch.save(model.state_dict(), "perfect_mlp.pth")
+    torch.save(model.state_dict(), "mlp/perfect_mlp.pth")
     return model
 
 if __name__ == "__main__":

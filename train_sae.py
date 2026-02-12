@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-from sae_definition import SparseAutoencoder
+from sae.sae_definition import SparseAutoencoder
 
 # --- 2. The Training Function ---
 def train_sae_from_file(file_path, epochs=100, l1_coeff=1e-4):
@@ -43,7 +43,7 @@ def train_sae_from_file(file_path, epochs=100, l1_coeff=1e-4):
             avg_loss = model_loss / len(loader)
             print(f"SAE Epoch [{epoch+1}/{epochs}] | Loss: {avg_loss:.6f}")
 
-    torch.save(sae.state_dict(), "sae_model.pth")
+    torch.save(sae.state_dict(), "sae/sae_model.pth")
     print("SAE training complete. Weights saved.")
     return sae
 

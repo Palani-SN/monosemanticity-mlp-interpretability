@@ -1,6 +1,6 @@
 import torch
-from mlp_definition import InterpretabilityMLP
-from train_mlp import load_excel_to_dataloader
+from mlp.mlp_definition import InterpretabilityMLP
+from dataset.data_loader import load_excel_to_dataloader
 
 def harvest_activations(model_path, dataloader):
     # 1. Setup Model
@@ -29,5 +29,5 @@ if __name__ == "__main__":
 
     # --- Execution ---
     # Use your training loader (8000 samples)
-    train_loader = load_excel_to_dataloader("mlp_train.xlsx", batch_size=64)
-    activations = harvest_activations("perfect_mlp.pth", train_loader)
+    train_loader = load_excel_to_dataloader("dataset/mlp_train.xlsx", batch_size=64)
+    activations = harvest_activations("mlp/perfect_mlp.pth", train_loader)

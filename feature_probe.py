@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from mlp_definition import InterpretabilityMLP
-from sae_definition import SparseAutoencoder
+from mlp.mlp_definition import InterpretabilityMLP
+from sae.sae_definition import SparseAutoencoder
 
 def inspect_features(mlp_path, sae_path, test_input, exp_output):
     # 1. Setup Models
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         2, 9, 4, 7, 1   # Col 2: value at 1 is 9. Index is 1.
     ]
     # Expected math: abs(9 - 1) = 8.0
-    inspect_features("perfect_mlp.pth", "sae_model.pth", sample_input, exp_output=8.0)
+    inspect_features("mlp/perfect_mlp.pth", "sae/sae_model.pth", sample_input, exp_output=8.0)
 
     # --- Test Case ---
     # Recall your logic: abs( inp[0][index1] - inp[1][index2] )
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         2, 8, 4, 7, 1   # Col 2: value at 1 is 8. Index is 1.
     ]
     # Expected math: abs(2 - 8) = 6.0
-    inspect_features("perfect_mlp.pth", "sae_model.pth", sample_input, exp_output=6.0)
+    inspect_features("mlp/perfect_mlp.pth", "sae/sae_model.pth", sample_input, exp_output=6.0)
 
     # --- Test Case ---
     # Recall your logic: abs( inp[0][index1] - inp[1][index2] )
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         2, 7, 4, 7, 1   # Col 2: value at 1 is 7. Index is 1.
     ]
     # Expected math: abs(3 - 7) = 4.0
-    inspect_features("perfect_mlp.pth", "sae_model.pth", sample_input, exp_output=4.0)
+    inspect_features("mlp/perfect_mlp.pth", "sae/sae_model.pth", sample_input, exp_output=4.0)
 
     # --- Test Case ---
     # Recall your logic: abs( inp[0][index1] - inp[1][index2] )
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         2, 5, 4, 7, 1   # Col 2: value at 1 is 5. Index is 1.
     ]
     # Expected math: abs(4 - 5) = 1.0
-    inspect_features("perfect_mlp.pth", "sae_model.pth", sample_input, exp_output=1.0)
+    inspect_features("mlp/perfect_mlp.pth", "sae/sae_model.pth", sample_input, exp_output=1.0)
 
     # --- Test Case ---
     # Recall your logic: abs( inp[0][index1] - inp[1][index2] )
@@ -99,4 +99,4 @@ if __name__ == "__main__":
         2, 4, 4, 7, 1   # Col 2: value at 1 is 4. Index is 1.
     ]
     # Expected math: abs(5 - 4) = 1.0
-    inspect_features("perfect_mlp.pth", "sae_model.pth", sample_input, exp_output=1.0)
+    inspect_features("mlp/perfect_mlp.pth", "sae/sae_model.pth", sample_input, exp_output=1.0)
