@@ -186,9 +186,9 @@ Duration: 21 m 9 s
 
 #### Model Convergence & Reconstruction Fidelity
 
-- **MLP Performance** : The MLP demonstrated strong learning behavior, with the Validation MSE dropping significantly from 0.709 (Epoch 50) to a stable 0.147 (Epoch 500). The narrow delta between expected and actual outputs (e.g., $8.0$ vs $7.48$) confirms the model effectively captured the underlying mathematical logic of the dataset.
+- **MLP Performance** : The MLP demonstrated strong learning behavior, with the Validation MSE dropping significantly from **0.709** (Epoch 50) to a stable **0.147** (Epoch 500). The narrow delta between expected and actual outputs (e.g., $8.0$ vs $7.48$) confirms the model effectively captured the underlying mathematical logic of the dataset.
 
-- **SAE Efficiency** : The Sparse Autoencoder achieved an exceptionally low loss of 0.001476 by Epoch 100. This indicates the SAE has successfully learned to reconstruct the MLP’s 512-dimensional hidden activations using a sparse set of features without losing critical information.
+- **SAE Efficiency** : The Sparse Autoencoder achieved an exceptionally low loss of **0.001476** by Epoch 100. This indicates the SAE has successfully learned to reconstruct the MLP’s 512-dimensional hidden activations using a sparse set of features without losing critical information.
 
 #### Identification of Monosemantic Features
 
