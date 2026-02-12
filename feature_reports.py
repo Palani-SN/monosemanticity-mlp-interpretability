@@ -1,6 +1,7 @@
 import os
 import json
 import torch
+import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader, ConcatDataset
 from mlp.mlp_definition import InterpretabilityMLP
@@ -287,11 +288,236 @@ def generate_logic_heatmap_html(matrix_df, metadata, filename="logic_circuit_map
         f.write(html_content)
     return os.path.abspath(filename)
 
-def generate_sankey_diagram(df):
-    pass
+def generate_sankey_diagram(df, top_k=150):
+    """
+    Generates a Google Charts Sankey Diagram.
+    Levels: Index -> Input Value -> Neuron -> Feature -> Output Value
+    """
+    # 1. Data Processing
+    df = df.copy()
+    df['energy'] = pd.to_numeric(df['neuron_act']) * pd.to_numeric(df['feature_act'])
+    
+    # Prefixing to avoid circularity (required for Google Charts as well)
+    df['L1'] = "Idx: " + df['idx_combination'].astype(str)
+    df['L2'] = "Val: " + df['val_combination'].astype(str)
+    df['L3'] = "Neu: " + df['neuron_id'].astype(str)
+    df['L4'] = "Feat: " + df['feature_id'].astype(str)
+    df['L5'] = "Out: " + df['expected'].astype(str)
+    
+    flow_definitions = [
+        ('L1', 'L2'),
+        ('L2', 'L3'),
+        ('L3', 'L4'),
+        ('L4', 'L5')
+    ]
+    
+    # Build the Row Array for Google Charts: [['From', 'To', 'Weight'], ...]
+    rows = []
+    for src_col, tgt_col in flow_definitions:
+        temp_flow = df.groupby([src_col, tgt_col])['energy'].sum().reset_index()
+        temp_flow.columns = ['source', 'target', 'value']
+        
+        # Take the top connections per level to keep it clean
+        top_temp = temp_flow.nlargest(top_k // 4, 'value')
+        
+        for _, row in top_temp.iterrows():
+            rows.append([row['source'], row['target'], round(float(row['value']), 4)])
 
-def generate_stacked_norm_dist(df):
-    pass
+    # 2. HTML Template with Google Charts JS
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <style>
+            body {{ font-family: 'Inter', -apple-system, sans-serif; background: #ffffff; margin: 0; padding: 20px; }}
+            #sankey_main {{ width: 100%; height: 850px; min-width: 1200px; }}
+            .header {{ text-align: center; margin-bottom: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>Mechanistic Interpretability: End-to-End Circuit Flow</h2>
+            <p>Hover over nodes to see causal trace intensity</p>
+        </div>
+        <div id="sankey_main"></div>
+
+        <script type="text/javascript">
+          google.charts.load('current', {{'packages':['sankey']}});
+          google.charts.setOnLoadCallback(drawChart);
+
+          function drawChart() {{
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'From');
+            data.addColumn('string', 'To');
+            data.addColumn('number', 'Weight');
+            data.addRows({json.dumps(rows)});
+
+            // Styling based on your reference image
+            var colors = ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
+                          '#cab2d6', '#ffff99', '#1f78b4', '#33a02c'];
+
+            var options = {{
+              height: 800,
+              sankey: {{
+                node: {{
+                  colors: colors,
+                  label: {{ fontSize: 12, color: '#444', fontWeight: 'bold' }},
+                  interactivity: true,
+                  width: 15,
+                  labelPadding: 15
+                }},
+                link: {{
+                  colorMode: 'gradient', // Creates that beautiful soft flow
+                  colors: colors,
+                  fillOpacity: 0.2 // Soft pastel look
+                }}
+              }}
+            }};
+
+            var chart = new google.visualization.Sankey(document.getElementById('sankey_main'));
+            chart.draw(data, options);
+          }}
+        </script>
+    </body>
+    </html>
+    """
+
+    path = "google_circuit_sankey.html"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    return os.path.abspath(path)
+
+def generate_stacked_norm_dist(df, top_k=20):
+    """
+    Generates a Highcharts Bell Curve plot.
+    If top_k is None, it plots all available unique Neuron-Feature pairs.
+    """
+    # 1. Prepare Numeric Data
+    df['neuron_act'] = pd.to_numeric(df['neuron_act'], errors='coerce')
+    df['feature_act'] = pd.to_numeric(df['feature_act'], errors='coerce')
+    df['energy'] = df['neuron_act'] * df['feature_act']
+    
+    # 2. Statistical Aggregation
+    stats = df.groupby(['neuron_id', 'feature_id'])['energy'].agg(['mean', 'std', 'count']).reset_index()
+    
+    # Filter for validity (std requires > 1 sample, count > 2 for a meaningful curve)
+    stats = stats[stats['count'] > 2].dropna()
+    
+    # 3. Handle top_k logic
+    if top_k is not None:
+        stats['impact'] = stats['mean'] * stats['count']
+        plot_stats = stats.nlargest(top_k, 'impact')
+    else:
+        plot_stats = stats.sort_values('mean', ascending=False)
+
+    # 4. Curve Generation Logic
+    series_data = []
+    # Determine global X-axis bounds to keep all curves in frame
+    if not plot_stats.empty:
+        low_bound = plot_stats['mean'].min() - (plot_stats['std'].max() * 4)
+        high_bound = plot_stats['mean'].max() + (plot_stats['std'].max() * 4)
+        x_range = np.linspace(low_bound, high_bound, 300)
+
+        for _, row in plot_stats.iterrows():
+            mu = row['mean']
+            sigma = row['std']
+            
+            # Normal Distribution PDF formula
+            y_values = (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_range - mu) / sigma)**2)
+            
+            curve_points = [[round(x, 4), round(y, 6)] for x, y in zip(x_range, y_values)]
+            
+            series_data.append({
+                "name": f"{row['neuron_id']} ↔ {row['feature_id']}",
+                "data": curve_points,
+                "mu": round(mu, 4),
+                "sigma": round(sigma, 4),
+                "count": int(row['count']),
+                "turboThreshold": 0 # Handle large datasets
+            })
+
+    # 5. HTML Template
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Circuit Stability Distributions</title>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <style>
+            body {{ font-family: 'Inter', -apple-system, sans-serif; background: #fcfcfc; padding: 20px; }}
+            .container {{ background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }}
+            #chart-div {{ width: 100%; height: 750px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2 style="text-align: center; color: #1a1a1a; margin-bottom: 5px;">Circuit Reliability Analysis</h2>
+            <p style="text-align: center; color: #777; margin-bottom: 25px;">
+                Circuit Reliability = <b>Mu & Sigma</b> (From list of N_act * F_act)
+            </p>
+            <div id="chart-div"></div>
+        </div>
+
+        <script>
+        Highcharts.chart('chart-div', {{
+            chart: {{ 
+                type: 'areaspline', 
+                backgroundColor: '#ffffff',
+                zoomType: 'x',
+                resetZoomButton: {{ position: {{ align: 'right', verticalAlign: 'top' }} }}
+            }},
+            title: {{ 
+                text: null, 
+                style: {{ fontWeight: 'bold' }} }},
+            xAxis: {{ 
+                title: {{ text: 'Activation Energy' }},
+                gridLineWidth: 1,
+                gridLineColor: '#f0f0f0'
+            }},
+            yAxis: {{ 
+                title: {{ text: 'Probability Density' }},
+                gridLineColor: '#f0f0f0'
+            }},
+            legend: {{
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
+                itemStyle: {{ fontSize: '9px', fontWeight: '400' }}
+            }},
+            tooltip: {{
+                shared: false,      /* ONLY one curve at a time */
+                followPointer: true,
+                useHTML: true,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                headerFormat: '<small style="color:{{series.color}}">●</small> <b>{{series.name}}</b><br/>',
+                pointFormat: `
+                    Density: <b>{{point.y:.5f}}</b><br/>
+                    Mean (μ): <b>{{series.options.mu}}</b><br/>
+                    Std Dev (σ): <b>{{series.options.sigma}}</b><br/>
+                    Samples: <b>{{series.options.count}}</b>`
+            }},
+            plotOptions: {{
+                areaspline: {{
+                    fillOpacity: 0.1,
+                    lineWidth: 2,
+                    stickyTracking: false, /* Tooltip only triggers on direct hover */
+                    marker: {{ enabled: false }},
+                    states: {{ hover: {{ lineWidth: 4, fillOpacity: 0.3 }} }}
+                }}
+            }},
+            series: {json.dumps(series_data)}
+        }});
+        </script>
+    </body>
+    </html>
+    """
+
+    path = "circuit_bell_curves.html"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    
+    return os.path.abspath(path)
 
 
 if __name__ == "__main__":
@@ -308,11 +534,14 @@ if __name__ == "__main__":
     filepath = generate_logic_heatmap_html(matrix_df, metadata)
     print(f"Logic heatmap saved to: {filepath}")
 
+    filepath = generate_stacked_norm_dist(df)
+    print(f"Stacked norm dist saved to: {filepath}")
+
+    filepath = generate_sankey_diagram(df)
+    print(f"Sankey diagram saved to: {filepath}")
+
     # # --- Usage Example ---
     # matrix_df, metadata = generate_correlation_matrix(df)
 
     # filepath = generate_correlation_heatmap(matrix_df, metadata)
     # print(f"Correlation heatmap saved to: {filepath}")
-    
-    generate_sankey_diagram(df)
-    generate_stacked_norm_dist(df)

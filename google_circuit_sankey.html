@@ -1,0 +1,58 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <style>
+            body { font-family: 'Inter', -apple-system, sans-serif; background: #ffffff; margin: 0; padding: 20px; }
+            #sankey_main { width: 100%; height: 850px; min-width: 1200px; }
+            .header { text-align: center; margin-bottom: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>Mechanistic Interpretability: End-to-End Circuit Flow</h2>
+            <p>Hover over nodes to see causal trace intensity</p>
+        </div>
+        <div id="sankey_main"></div>
+
+        <script type="text/javascript">
+          google.charts.load('current', {'packages':['sankey']});
+          google.charts.setOnLoadCallback(drawChart);
+
+          function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'From');
+            data.addColumn('string', 'To');
+            data.addColumn('number', 'Weight');
+            data.addRows([["Idx: 0-0", "Val: 9-0", 233.3596], ["Idx: 3-0", "Val: 9-9", 210.9898], ["Idx: 0-0", "Val: 0-9", 192.5614], ["Idx: 0-0", "Val: 8-9", 185.0799], ["Idx: 3-0", "Val: 7-9", 184.8509], ["Idx: 0-0", "Val: 9-3", 180.8577], ["Idx: 3-0", "Val: 5-9", 179.0266], ["Idx: 0-0", "Val: 0-8", 177.9114], ["Idx: 3-3", "Val: 9-9", 170.5891], ["Idx: 0-1", "Val: 0-0", 167.4092], ["Idx: 2-0", "Val: 2-9", 165.38], ["Idx: 0-0", "Val: 0-3", 161.1938], ["Idx: 0-0", "Val: 9-4", 159.145], ["Idx: 3-0", "Val: 6-9", 152.4813], ["Idx: 0-3", "Val: 0-9", 151.0969], ["Idx: 0-0", "Val: 0-5", 150.7946], ["Idx: 3-0", "Val: 1-0", 148.7674], ["Idx: 0-0", "Val: 3-6", 148.6892], ["Idx: 3-3", "Val: 0-9", 147.5813], ["Idx: 3-0", "Val: 9-7", 146.8661], ["Idx: 1-0", "Val: 6-0", 145.0553], ["Idx: 3-0", "Val: 2-0", 143.3484], ["Idx: 3-0", "Val: 0-0", 142.5929], ["Idx: 0-0", "Val: 3-1", 142.3332], ["Idx: 0-3", "Val: 9-9", 141.1272], ["Idx: 0-3", "Val: 0-7", 140.1526], ["Idx: 0-2", "Val: 0-4", 138.9023], ["Idx: 0-0", "Val: 2-8", 137.3144], ["Idx: 0-3", "Val: 9-0", 137.2397], ["Idx: 0-3", "Val: 2-9", 136.4663], ["Idx: 3-0", "Val: 9-1", 135.2039], ["Idx: 0-3", "Val: 0-1", 134.7918], ["Idx: 0-0", "Val: 9-7", 134.5553], ["Idx: 0-0", "Val: 8-0", 133.3287], ["Idx: 0-3", "Val: 2-0", 133.0867], ["Idx: 0-0", "Val: 1-6", 131.7847], ["Idx: 3-3", "Val: 8-9", 131.5059], ["Val: 8-0", "Neu: 126", 146.852], ["Val: 6-0", "Neu: 126", 145.764], ["Val: 9-0", "Neu: 126", 143.7067], ["Val: 0-0", "Neu: 126", 134.7237], ["Val: 5-0", "Neu: 126", 129.989], ["Val: 9-7", "Neu: 312", 128.4969], ["Val: 9-2", "Neu: 93", 126.7625], ["Val: 9-9", "Neu: 63", 125.368], ["Val: 3-0", "Neu: 126", 125.3212], ["Val: 0-9", "Neu: 238", 125.0083], ["Val: 0-9", "Neu: 63", 123.146], ["Val: 2-9", "Neu: 238", 120.2355], ["Val: 2-0", "Neu: 126", 117.0197], ["Val: 5-8", "Neu: 312", 114.5791], ["Val: 9-5", "Neu: 93", 112.0146], ["Val: 4-0", "Neu: 126", 109.6108], ["Val: 7-0", "Neu: 126", 108.5313], ["Val: 9-1", "Neu: 93", 107.343], ["Val: 8-5", "Neu: 312", 104.7025], ["Val: 9-4", "Neu: 93", 103.8859], ["Val: 8-8", "Neu: 312", 103.6337], ["Val: 9-0", "Neu: 93", 103.5987], ["Val: 9-9", "Neu: 238", 102.507], ["Val: 4-9", "Neu: 63", 102.3601], ["Val: 0-3", "Neu: 312", 102.0471], ["Val: 9-8", "Neu: 93", 101.1284], ["Val: 5-9", "Neu: 238", 101.013], ["Val: 0-9", "Neu: 312", 100.0795], ["Val: 1-0", "Neu: 126", 99.1253], ["Val: 7-9", "Neu: 238", 97.7992], ["Val: 9-7", "Neu: 93", 97.0934], ["Val: 0-0", "Neu: 312", 97.0749], ["Val: 1-8", "Neu: 312", 96.5748], ["Val: 2-8", "Neu: 312", 95.9579], ["Val: 6-9", "Neu: 63", 95.3156], ["Val: 9-7", "Neu: 0", 94.9325], ["Val: 1-1", "Neu: 312", 94.6497], ["Neu: 0", "Feat: 1009", 2989.6196], ["Neu: 312", "Feat: 1009", 1336.2441], ["Neu: 93", "Feat: 310", 1235.7337], ["Neu: 126", "Feat: 797", 1128.6453], ["Neu: 225", "Feat: 768", 1085.6281], ["Neu: 312", "Feat: 351", 1009.6893], ["Neu: 247", "Feat: 768", 676.8166], ["Neu: 238", "Feat: 1009", 596.9626], ["Neu: 63", "Feat: 768", 498.1035], ["Neu: 44", "Feat: 1594", 486.7326], ["Neu: 314", "Feat: 355", 471.2321], ["Neu: 18", "Feat: 308", 464.8657], ["Neu: 44", "Feat: 310", 434.7027], ["Neu: 358", "Feat: 211", 390.7535], ["Neu: 126", "Feat: 1144", 374.5849], ["Neu: 454", "Feat: 1467", 365.8347], ["Neu: 312", "Feat: 837", 286.0097], ["Neu: 187", "Feat: 768", 285.1845], ["Neu: 44", "Feat: 768", 284.33], ["Neu: 44", "Feat: 173", 279.077], ["Neu: 238", "Feat: 837", 265.6388], ["Neu: 225", "Feat: 1722", 264.1628], ["Neu: 70", "Feat: 1632", 247.6102], ["Neu: 256", "Feat: 610", 244.9541], ["Neu: 312", "Feat: 797", 240.2798], ["Neu: 312", "Feat: 1594", 234.6065], ["Neu: 247", "Feat: 1722", 216.194], ["Neu: 225", "Feat: 308", 214.6599], ["Neu: 221", "Feat: 1551", 212.003], ["Neu: 0", "Feat: 355", 210.5743], ["Neu: 312", "Feat: 1551", 209.8635], ["Neu: 474", "Feat: 610", 206.2916], ["Neu: 312", "Feat: 310", 203.2099], ["Neu: 225", "Feat: 135", 201.9941], ["Neu: 418", "Feat: 351", 196.2243], ["Neu: 93", "Feat: 173", 195.9451], ["Neu: 314", "Feat: 351", 192.0851], ["Feat: 1009", "Out: 1", 1027.8536], ["Feat: 1009", "Out: 3", 866.4651], ["Feat: 1009", "Out: 2", 818.4093], ["Feat: 1009", "Out: 5", 632.9805], ["Feat: 768", "Out: 1", 625.8505], ["Feat: 1009", "Out: 0", 606.2727], ["Feat: 1009", "Out: 4", 595.7177], ["Feat: 768", "Out: 2", 589.1808], ["Feat: 768", "Out: 3", 515.6146], ["Feat: 1009", "Out: 6", 469.4736], ["Feat: 768", "Out: 4", 439.7542], ["Feat: 351", "Out: 1", 418.3613], ["Feat: 310", "Out: 1", 396.2479], ["Feat: 1594", "Out: 1", 378.7181], ["Feat: 1009", "Out: 7", 377.9687], ["Feat: 351", "Out: 2", 374.3041], ["Feat: 768", "Out: 0", 372.3698], ["Feat: 768", "Out: 5", 349.5912], ["Feat: 351", "Out: 3", 329.4289], ["Feat: 1594", "Out: 3", 310.8266], ["Feat: 1594", "Out: 2", 293.6367], ["Feat: 310", "Out: 2", 285.5857], ["Feat: 308", "Out: 1", 267.1292], ["Feat: 310", "Out: 4", 264.5033], ["Feat: 351", "Out: 4", 256.3615], ["Feat: 310", "Out: 3", 255.1331], ["Feat: 1144", "Out: 1", 247.9554], ["Feat: 1594", "Out: 4", 240.7923], ["Feat: 308", "Out: 2", 239.2322], ["Feat: 310", "Out: 7", 238.1674], ["Feat: 310", "Out: 5", 235.9898], ["Feat: 308", "Out: 3", 234.9351], ["Feat: 768", "Out: 6", 233.6468], ["Feat: 1009", "Out: 8", 229.8815], ["Feat: 351", "Out: 0", 229.6657], ["Feat: 355", "Out: 1", 226.0311], ["Feat: 308", "Out: 5", 223.2822]]);
+
+            // Styling based on your reference image
+            var colors = ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
+                          '#cab2d6', '#ffff99', '#1f78b4', '#33a02c'];
+
+            var options = {
+              height: 800,
+              sankey: {
+                node: {
+                  colors: colors,
+                  label: { fontSize: 12, color: '#444', fontWeight: 'bold' },
+                  interactivity: true,
+                  width: 15,
+                  labelPadding: 15
+                },
+                link: {
+                  colorMode: 'gradient', // Creates that beautiful soft flow
+                  colors: colors,
+                  fillOpacity: 0.2 // Soft pastel look
+                }
+              }
+            };
+
+            var chart = new google.visualization.Sankey(document.getElementById('sankey_main'));
+            chart.draw(data, options);
+          }
+        </script>
+    </body>
+    </html>
+    

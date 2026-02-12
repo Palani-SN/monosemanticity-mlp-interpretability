@@ -1,7 +1,13 @@
 @echo off
+:: Use PowerShell to get a clean start timestamp
+for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set STARTTIME=%%a
+set "TSTART=%time%"
+
 SETLOCAL EnableDelayedExpansion
 
+:: --- YOUR CODE STARTS HERE ---
 echo [1/7] Activating Environment...
+:: Note: 'call conda' is correct for batch
 call conda activate mlp || (echo Failed to activate conda & exit /b 1)
 
 echo [2/7] Generating Dataset...
@@ -29,4 +35,13 @@ echo ======================================================
 echo Pipeline Complete: Monosemantic Features Identified.
 echo ======================================================
 call conda deactivate
-pause
+:: --- YOUR CODE ENDS HERE ---
+
+:: Calculate Duration using PowerShell so we don't have to deal with Batch math
+for /f "tokens=*" %%a in ('powershell -command "Get-Date -Format 'HH:mm:ss'"') do set ENDTIME=%%a
+for /f "tokens=*" %%a in ('powershell -command "$s=Get-Date '%STARTTIME%'; $e=Get-Date '%ENDTIME%'; $d=$e-$s; \"$($d.Minutes)m $($d.Seconds)s\""') do set DURATION=%%a
+
+echo.
+echo Started:  %STARTTIME%
+echo Finished: %ENDTIME%
+echo Duration: %DURATION%
