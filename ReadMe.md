@@ -1,18 +1,20 @@
-## Monosemanicity-MLP-Interpretability
+## Monosemanticity-MLP-Interpretability
 
 ### Introduction
 
-- As Large Language Models (LLMs) grow in complexity, they often become "black boxes" where internal logic is obscured by polysemanticity—a phenomenon where a single neuron represents multiple unrelated concepts. This project implements the methodology proposed in "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning" by Anthropic. By applying Sparse Autoencoders (SAE) to a controlled Multi-Layer Perceptron (MLP), we aim to decompose messy internal activations into clean, interpretable "features." This decomposition is vital for model safety, allowing us to monitor and steer model behavior by identifying specific circuits before they lead to unsafe outputs.
+- As Large Language Models (LLMs) grow in complexity, they often become "black boxes" where internal logic is obscured by ***polysemanticity***—a phenomenon where a single neuron represents multiple unrelated concepts. This project implements the methodology proposed in ***"Towards Monosemanticity: Decomposing Language Models With Dictionary Learning"*** by Anthropic. By applying ***Sparse Autoencoders (SAE)*** to a controlled ***Multi-Layer Perceptron (MLP)***, we aim to decompose messy internal activations into clean, interpretable "features." This decomposition is vital for model safety, allowing us to monitor and steer model behavior by identifying specific circuits before they lead to unsafe outputs.
 
-#### Problem Statement
+### Problem Statement
 
-- To simulate the complexity of a real-world model, we designed an **Index-Based Arithmetic** task. The MLP is trained to process a $5 \times 2$ matrix where the final element of each column acts as a **pointer (index)** to another value within that same column. The network must calculate:
+- To simulate the complexity of a real-world model, we designed an ***Index-Based Arithmetic*** task. The MLP is trained to process a $5 \times 2$ matrix where the final element of each column acts as a ***pointer (index)*** to another value within that same column. The network must calculate:
 
 $$Target = | \text{Col}_{1}[\text{Pointer}_{1}] - \text{Col}_{2}[\text{Pointer}_{2}] |$$
 
 - This setup forces the MLP to learn "routing" logic alongside subtraction. Our motive is to map these hidden "pointer" operations to specific SAE features, enabling a complete mechanistic understanding of the model's decision-making process.
 
 ### Folder Structure
+
+- [Article](https://palani-sn.github.io/ML/ReadMe.html)
 
 ```txt
 monosemanticity-mlp-interpretability/
@@ -38,7 +40,7 @@ monosemanticity-mlp-interpretability/
 
 ### Env Setup
 
-- setup conda env, with python 3.11.6
+- setup conda env, with ***python 3.11.6***
 
 ```cmd
 conda create -n mlp python=3.11.6
@@ -48,19 +50,21 @@ python -m pip install -r reqs.txt
 
 ### Execution Steps
 
-- **Dataset Generation**: We use a math model to generate our data, that has 10x1 Inputs and 1x1 Output.  
+- ***Dataset Generation***: We use a math model to generate our data, that has 10x1 Inputs and 1x1 Output.  
 
-- **MLP Training**: train_mlp.py optimizes the network to solve the math task, saving the "perfected" weights to perfect_mlp.pth.
+- ***MLP Training***: train_mlp.py optimizes the network to solve the math task, saving the "perfected" weights to perfect_mlp.pth.
 
-- **Activation Harvesting**: harvest_activations.py passes the training set through the frozen MLP. It "hooks" the 512-dim hidden layer and saves the result as mlp_activations.pt.
+- ***Activation Harvesting***: harvest_activations.py passes the training set through the frozen MLP. It "hooks" the 512-dim hidden layer and saves the result as mlp_activations.pt.
 
-- **SAE Dictionary Learning**: train_sae.py trains the Sparse Autoencoder on the harvested activations. The L1 penalty forces the SAE to use a sparse set of the 2048 available "dictionary" features to reconstruct the MLP's state.
+- ***SAE Dictionary Learning***: train_sae.py trains the Sparse Autoencoder on the harvested activations. The L1 penalty forces the SAE to use a sparse set of the 2048 available "dictionary" features to reconstruct the MLP's state.
 
-- **Feature Probing**: feature_probe.py evaluates specific inputs to identify which SAE features (e.g., #1883) correspond to specific mathematical indices.
+- ***Feature Probing***: feature_probe.py evaluates specific inputs to identify which SAE features (e.g., #1883) correspond to specific mathematical indices.
 
-- **Reporting**: feature_reports.py aggregates all feature-to-neuron mappings into clustered HTML reports for global interpretability.
+- ***Reporting***: feature_reports.py aggregates all feature-to-neuron mappings into clustered HTML reports for global interpretability.
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/workflow.png?raw=true)
+
+### Execution Log
 
 ```output
 C:\Workspace\Git_Repos\monosemanticity-mlp-interpretability>workflow.bat
@@ -177,45 +181,50 @@ Started:  01:02:39
 Finished: 01:23:48
 Duration: 21 m 9 s
 ------------------------------------------------------
-
 ```
 
 ### Experiment Inference: Mechanistic Interpretability of MLP Circuits
 
 - This experiment successfully executed a full end-to-end pipeline to deconstruct the internal logic of a Multi-Layer Perceptron (MLP) using a Sparse Autoencoder (SAE). By "unfolding" the hidden layers, we have transitioned from a "black-box" model to a series of interpretable, monosemantic feature circuits.
 
-#### Model Convergence & Reconstruction Fidelity
+### Model Convergence & Reconstruction Fidelity
 
-- **MLP Performance** : The MLP demonstrated strong learning behavior, with the Validation MSE dropping significantly from **0.709** (Epoch 50) to a stable **0.147** (Epoch 500). The narrow delta between expected and actual outputs (e.g., $8.0$ vs $7.48$) confirms the model effectively captured the underlying mathematical logic of the dataset.
+- ***MLP Performance*** : The MLP demonstrated strong learning behavior, with the Validation MSE dropping significantly from ***0.709*** (Epoch 50) to a stable ***0.147*** (Epoch 500). The narrow delta between expected and actual outputs (e.g., 8.0 vs 7.48) confirms the model effectively captured the underlying mathematical logic of the dataset.
 
-- **SAE Efficiency** : The Sparse Autoencoder achieved an exceptionally low loss of **0.001476** by Epoch 100. This indicates the SAE has successfully learned to reconstruct the MLP’s 512-dimensional hidden activations using a sparse set of features without losing critical information.
+- ***SAE Efficiency*** : The Sparse Autoencoder achieved an exceptionally low loss of ***0.001476*** by Epoch 100. This indicates the SAE has successfully learned to reconstruct the MLP’s 512-dimensional hidden activations using a sparse set of features without losing critical information.
 
-#### Identification of Monosemantic Features
+### Identification of Monosemantic Features
 
 - The feature probing phase reveals a highly structured internal representation. We can infer the functional roles of specific features based on their activation patterns across samples:
 
-- **Feature #1440 & #1649 (The "Core Logic" Features)** : These features are consistently the top activations across all samples. They likely represent the primary arithmetic or logical operation required by the task.
+- ***Feature #1440 & #1649 (The "Core Logic" Features)*** : These features are consistently the top activations across all samples. They likely represent the primary arithmetic or logical operation required by the task.
 
-- **Feature #725 (The "Inverse Correlation" Feature)** : Notice that as the Expected Output decreases ($8.0 \to 1.0$), the activation of Feature #725 **increases** ($0.319 \to 0.486$). This suggests Feature #725 may be specialized in detecting or processing lower-magnitude results or specific input decrements.
+- ***Feature #725 (The "Inverse Correlation" Feature)*** : Notice that as the Expected Output decreases ($8.0 \to 1.0$), the activation of Feature #725 ***increases*** ($0.319 \to 0.486$). This suggests Feature #725 may be specialized in detecting or processing lower-magnitude results or specific input decrements.
 
-- **Sparsity Constraints** : With approximately **60-66 active features** out of the latent space, the model is utilizing roughly **10-12%** of its capacity per inference. This level of sparsity is ideal for identifying "monosemantic" units—features that do one specific job.
+- ***Sparsity Constraints*** : With approximately ***60-66 active features*** out of the latent space, the model is utilizing roughly ***10-12%*** of its capacity per inference. This level of sparsity is ideal for identifying "monosemantic" units—features that do one specific job.
 
-#### Structural Circuit Trace
+### Structural Circuit Trace
 
 - The pipeline successfully synthesized three distinct perspectives of the model's "brain":
 
-- **The Logic Heatmap** : Maps the raw input triggers to internal activation. (refer **logic_circuit_map.html**)
+- ***The Logic Heatmap*** : Maps the raw input triggers to internal activation. (refer *[logic_circuit_map.html](https://palani-sn.github.io/ML/reports/logic_circuit_map.html)*)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/heatmap.png?raw=true)
 
-- **The Stacked Norm Dist** : Confirms the statistical reliability and "stability" of the identified features. (refer **circuit_bell_curves.html**)
+- ***The Stacked Norm Dist*** : Confirms the statistical reliability and "stability" of the identified features. (refer *[circuit_bell_curves.html](https://palani-sn.github.io/ML/reports/circuit_bell_curves.html)*)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/bellcurve.png?raw=true)
 
-- **The UHD Sankey Diagram** : Provides the definitive "Causal Map," showing exactly how an input index flows through a specific Neuron, triggers a specific SAE Feature, and results in the final MLP prediction. (refer **uhd_bold_sankey.html**)
+- ***The UHD Sankey Diagram*** : Provides the definitive "Causal Map," showing exactly how an input index flows through a specific Neuron, triggers a specific SAE Feature, and results in the final MLP prediction. (refer *[uhd_bold_sankey.html](https://palani-sn.github.io/ML/reports/uhd_bold_sankey.html)*)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/sankey_diagram.png?raw=true)
 
 ### Conclusion
 
-- The experiment proves that the model's logic is not scattered randomly across the 512 neurons, but is instead concentrated into **traceable circuits**. Features **#1440**, **#1649**, and **#725** are the "heavy lifters" of this network. The 21-minute execution time produced a high-fidelity map that allows us to predict how the model will behave on unseen data by simply monitoring these specific feature activations.
+- The experiment proves that the model's logic is not scattered randomly across the 512 neurons, but is instead concentrated into ***traceable circuits***. Features ***#1440***, ***#1649***, and ***#725*** are the "heavy lifters" of this network. The 21-minute execution time produced a high-fidelity map that allows us to predict how the model will behave on unseen data by simply monitoring these specific feature activations.
+
+### References
+
+If you use this codebase for research, please cite the original paper that inspired this architecture:
+
+***Bricken, T., Templeton, A., Batson, J., Chen, B., Adler, J., Kotagi, A., ... & Olah, C. (2023). Towards Monosemanticity: Decomposing Language Models with Dictionary Learning. Transformer Circuits Thread.***
