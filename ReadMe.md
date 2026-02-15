@@ -168,8 +168,21 @@ Feature #1212 | Activation: 0.3073
 Tracing logic flow through the entire circuit...
 Clean, centered report saved to circuit_trace_detailed.xlsx
 Logic heatmap saved to: C:\Workspace\Git_Repos\monosemanticity-mlp-interpretability\logic_circuit_map.html
+Interactive bell curve visualization saved
+   Total circuits: 1000
+   Sorted by: Mean (descending)
+   Default selection: First 10 circuits (highest means)
 Stacked norm dist saved to: C:\Workspace\Git_Repos\monosemanticity-mlp-interpretability\circuit_bell_curves.html
-Sankey diagram saved to: C:\Workspace\Git_Repos\monosemanticity-mlp-interpretability\uhd_bold_sankey.html
+Sankey diagram saved to: C:\Workspace\Git_Repos\monosemanticity-mlp-interpretability\sankey_flow_diagram.html
+   Total nodes: 208
+   Total links: 1000
+   Plot height: 3150px
+   Layer distribution:
+      Layer 0 (Idx): 12 nodes
+      Layer 1 (Val): 90 nodes
+      Layer 2 (Neu): 34 nodes
+      Layer 3 (Feat): 62 nodes
+      Layer 4 (Out): 10 nodes
 
 ======================================================
 Pipeline Complete: Monosemantic Features Identified.
@@ -218,6 +231,10 @@ Duration: 21 m 9 s
 - ***The UHD Sankey Diagram*** : Provides the definitive "Causal Map," showing exactly how an input index flows through a specific Neuron, triggers a specific SAE Feature, and results in the final MLP prediction. (refer *[uhd_bold_sankey.html](https://palani-sn.github.io/ML/reports/uhd_bold_sankey.html)*)
 
 ![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/sankey_diagram.png?raw=true)
+
+- ***Connections Deep Dive***: For Deep Dive On how the connections internally change, with filters, we can use the following *[sankey_flow_diagram.html](https://palani-sn.github.io/ML/reports/sankey_flow_diagram.html)*. For a single Connect from Idx (0-3) & Out (1), the filtered connections are shown as an image below.
+
+![](https://github.com/Palani-SN/monosemanticity-mlp-interpretability/blob/main/images/filtered_single_case.png?raw=true)
 
 ### Conclusion
 
