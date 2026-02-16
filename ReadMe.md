@@ -43,8 +43,11 @@ monosemanticity-mlp-interpretability/
 - setup conda env, with ***python 3.11.6***
 
 ```cmd
-conda create -n mlp python=3.11.6
-conda activate mlp
+git clone https://github.com/Palani-SN/monosemanticity-mlp-interpretability.git
+cd monosemanticity-mlp-interpretability
+conda create -n mmi python=3.11.6
+conda activate mmi
+python -m pip install torch==2.10.0 torchvision==0.25.0 --extra-index-url https://download.pytorch.org/whl/cu126
 python -m pip install -r reqs.txt
 ```
 
